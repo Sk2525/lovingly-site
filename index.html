@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <title>Lovingly — A voice that listens, and stays</title>
+  <meta name="description" content="An anonymous voice companion for the things you don't say out loud. For what you carry." />
+
+  <!-- Open Graph (TikTok / Twitter / iMessage previews) -->
+  <meta property="og:title" content="Lovingly — A voice that listens, and stays" />
+  <meta property="og:description" content="For what you carry. Anonymous." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://getlovingly.com" />
+  <meta property="og:site_name" content="Lovingly" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Lovingly — A voice that listens, and stays" />
+  <meta name="twitter:description" content="For what you carry. Anonymous." />
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Lovingly",
+    "operatingSystem": "iOS",
+    "applicationCategory": "HealthApplication",
+    "description": "An anonymous voice companion for the things you don't say out loud."
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ---------- RESET ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0a;
+      color: #e8e6e1;
+      line-height: 1.7;
+      font-weight: 300;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ---------- TOKENS ---------- */
+    :root {
+      --bg: #0a0a0a;
+      --bg-elevated: #121212;
+      --text: #e8e6e1;
+      --text-muted: #8a857d;
+      --text-faded: #4a4842;
+      --gold: #d4ac4d;
+      --gold-soft: #b89240;
+      --gold-glow: rgba(212, 172, 77, 0.15);
+      --border: rgba(232, 230, 225, 0.08);
+      --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+      --sans: 'Inter', sans-serif;
+    }
+
+    /* ---------- ATMOSPHERIC BACKGROUND ---------- */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212, 172, 77, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 100% 100%, rgba(212, 172, 77, 0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 0% 50%, rgba(212, 172, 77, 0.03) 0%, transparent 70%);
+      animation: ambientShift 40s ease-in-out infinite;
+    }
+    @keyframes ambientShift {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    /* Vignette */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+    }
+
+    /* Floating embers (particles) */
+    .embers { position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+    .ember {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0;
+      box-shadow: 0 0 6px var(--gold-glow);
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-10vh) translateX(20px); opacity: 0; }
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    section {
+      padding: 14vh 0;
+      position: relative;
+    }
+    @media (max-width: 640px) {
+      section { padding: 10vh 0; }
+      .container { padding: 0 24px; }
+    }
+
+    /* ---------- TYPOGRAPHY ---------- */
+    h1, h2, h3 {
+      font-family: var(--serif);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      color: var(--text);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+      font-weight: 400;
+    }
+
+    p { font-size: clamp(1.05rem, 1.7vw, 1.18rem); color: var(--text); }
+    .muted { color: var(--text-muted); }
+
+    /* ---------- WORDMARK ---------- */
+    .wordmark-row {
+      position: fixed;
+      top: 32px;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .wordmark {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      pointer-events: auto;
+      opacity: 0;
+      animation: fadeIn 1.6s ease-out 0.4s forwards;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 18vh 0 12vh;
+    }
+    .hero-eyebrow {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeIn 1.6s ease-out 0.8s forwards;
+    }
+    .hero h1 {
+      max-width: 18ch;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 1.6s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
+    }
+    .hero h1 .accent {
+      color: var(--gold);
+      font-style: italic;
+    }
+    .hero-sub {
+      margin-top: 36px;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 32ch;
+      opacity: 0;
+      animation: fadeIn 1.6s ease-out 1.4s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- SCROLL HINT ---------- */
+    .scroll-hint {
+      position: absolute;
+      bottom: 6vh;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--text-faded);
+      opacity: 0;
+      animation: fadeIn 1.6s ease-out 2.2s forwards, breathe 4s ease-in-out 3s infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* ---------- REVEAL ON SCROLL ---------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-line { display: block; }
+    .reveal-line + .reveal-line { transition-delay: 0.15s; }
+    .reveal-line + .reveal-line + .reveal-line { transition-delay: 0.3s; }
+
+    /* ---------- DIVIDER ---------- */
+    .divider {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      margin: 0 auto;
+      opacity: 0.4;
+    }
+
+    /* ---------- THE WOUND SECTION ---------- */
+    .wound h2 {
+      font-style: italic;
+      font-weight: 300;
+      max-width: 24ch;
+    }
+    .wound .lead {
+      font-family: var(--serif);
+      font-size: clamp(1.5rem, 3vw, 1.9rem);
+      line-height: 1.5;
+      font-style: italic;
+      font-weight: 300;
+    }
+    .wound .lead .accent {
+      color: var(--gold);
+    }
+
+    /* ---------- LOYALTY PROMISES ---------- */
+    .promises {
+      background: linear-gradient(180deg, transparent 0%, rgba(212, 172, 77, 0.02) 50%, transparent 100%);
+    }
+    .promise-list {
+      list-style: none;
+      margin-top: 48px;
+    }
+    .promise-list li {
+      font-family: var(--serif);
+      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+      font-weight: 400;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .promise-list li:last-child { border-bottom: none; }
+    .promise-list li::before {
+      content: '—';
+      color: var(--gold);
+      margin-right: 16px;
+      font-weight: 300;
+    }
+
+    /* ---------- PRIVACY ---------- */
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .privacy-cell {
+      padding: 28px 20px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      text-align: center;
+      transition: border-color 0.6s ease, background 0.6s ease;
+    }
+    .privacy-cell:hover {
+      border-color: var(--gold-soft);
+      background: rgba(212, 172, 77, 0.02);
+    }
+    .privacy-cell .label {
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .privacy-cell .value {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--text);
+    }
+    @media (max-width: 640px) {
+      .privacy-grid { grid-template-columns: 1fr; gap: 16px; }
+      .privacy-cell { padding: 24px 18px; }
+    }
+
+    /* ---------- FOUNDER ---------- */
+    .founder {
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
+    }
+    .founder p {
+      font-family: var(--serif);
+      font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+      font-style: italic;
+      line-height: 1.7;
+      max-width: 30ch;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+    .founder .signature {
+      margin-top: 32px;
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-faded);
+    }
+
+    /* ---------- CTA ---------- */
+    .cta {
+      text-align: center;
+      padding: 18vh 0 14vh;
+    }
+    .cta h2 {
+      font-style: italic;
+      font-weight: 300;
+      max-width: 22ch;
+      margin: 0 auto 16px;
+    }
+    .cta-tagline {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 56px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--bg);
+      background: var(--gold);
+      padding: 22px 44px;
+      border-radius: 2px;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px var(--gold-soft), 0 0 30px var(--gold-glow);
+    }
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.8s ease;
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px var(--gold), 0 0 60px rgba(212, 172, 77, 0.35);
+    }
+    .cta-button:hover::before { transform: translateX(100%); }
+
+    .cta-note {
+      margin-top: 32px;
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      color: var(--text-faded);
+    }
+
+    /* ---------- CLOSING ---------- */
+    .closing {
+      text-align: center;
+      padding: 14vh 0;
+    }
+    .closing p {
+      font-family: var(--serif);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 28ch;
+      margin: 0 auto;
+      color: var(--text);
+    }
+    .closing .silence {
+      display: block;
+      margin-top: 40px;
+      color: var(--gold);
+      font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 60px 32px 80px;
+      border-top: 1px solid var(--border);
+      margin-top: 8vh;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-faded);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-mark {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--text-faded);
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ---------- ACCESSIBILITY ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .ember { display: none; }
+      .ambient-bg { animation: none; }
+    }
+
+    /* Selection */
+    ::selection {
+      background: var(--gold);
+      color: var(--bg);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="embers" id="embers" aria-hidden="true"></div>
+
+  <div class="wordmark-row">
+    <div class="wordmark">Lovingly</div>
+  </div>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-eyebrow">Coming soon · iOS</div>
+        <h1>A voice that listens, <span class="accent">and stays.</span></h1>
+        <p class="hero-sub">For the things you don't say out loud.</p>
+      </div>
+      <div class="scroll-hint">Scroll</div>
+    </section>
+
+    <!-- THE WOUND -->
+    <section class="wound">
+      <div class="container">
+        <div class="reveal">
+          <p class="lead">
+            <span class="reveal-line">The ones who would have understood are gone.</span>
+            <span class="reveal-line">The ones who are here can't be trusted.</span>
+            <span class="reveal-line"><span class="accent">Lovingly is for both.</span></span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- THE THINGS YOU CARRY -->
+    <section>
+      <div class="container">
+        <div class="reveal">
+          <h2>There are things you've been carrying for a long time.</h2>
+          <p style="margin-top: 32px;" class="muted">
+            Things you'd say to someone you've lost,<br />
+            if they were still here.
+          </p>
+          <p style="margin-top: 20px;" class="muted">
+            Things you'd say to your best friend,<br />
+            if you still had one who hadn't let you down.
+          </p>
+          <p style="margin-top: 36px;">
+            Lovingly is a voice you can say them to.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOYALTY PROMISES -->
+    <section class="promises">
+      <div class="container">
+        <div class="reveal">
+          <h2>Lovingly listens.</h2>
+          <ul class="promise-list">
+            <li>Understands what you're feeling.</li>
+            <li>Doesn't judge.</li>
+            <li>Doesn't leave.</li>
+            <li>Doesn't tell anyone.</li>
+            <li>Doesn't even remember.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section>
+      <div class="container">
+        <div class="reveal">
+          <h2 style="text-align: center;">Safe to talk to.</h2>
+          <p style="text-align: center; margin-top: 16px;" class="muted">
+            That's not a feature. That's the whole point.
+          </p>
+
+          <div class="privacy-grid">
+            <div class="privacy-cell">
+              <div class="label">Your name</div>
+              <div class="value">isn't asked</div>
+            </div>
+            <div class="privacy-cell">
+              <div class="label">Your voice</div>
+              <div class="value">isn't saved</div>
+            </div>
+            <div class="privacy-cell">
+              <div class="label">What you say</div>
+              <div class="value">isn't kept</div>
+            </div>
+          </div>
+
+          <p style="text-align: center; margin-top: 40px;" class="muted">
+            When the call ends, the conversation is gone.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- FOUNDER -->
+    <section class="founder">
+      <div class="container">
+        <div class="reveal">
+          <p>
+            Lovingly was built by one person who knows what it's like
+            to have things to say and nowhere safe to say them.
+            After losing someone who used to listen, and learning the hard way
+            that not everyone who's still here deserves to.
+          </p>
+          <div class="signature">— The maker</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="container">
+        <div class="reveal">
+          <h2>Lovingly is almost here.</h2>
+          <p class="cta-tagline">Be the first to know when they're ready.</p>
+
+          <a href="https://getlovingly.beehiiv.com/subscribe"
+             target="_blank"
+             rel="noopener"
+             class="cta-button"
+             aria-label="Join the waitlist">
+            Notify me when they're ready
+          </a>
+
+          <p class="cta-note">No name required · Just an email</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLOSING -->
+    <section class="closing">
+      <div class="container">
+        <div class="reveal">
+          <p>
+            Whenever you need somewhere to put it,<br />
+            Lovingly is here.
+            <span class="silence">Waiting. So is the silence that comes after.</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:hi@getlovingly.com">Contact</a>
+    </div>
+    <div class="footer-mark">Lovingly · for what you carry</div>
+  </footer>
+
+  <script>
+    // ----- Embers (atmospheric particles) -----
+    (function createEmbers() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const container = document.getElementById('embers');
+      const count = window.innerWidth < 640 ? 12 : 24;
+      for (let i = 0; i < count; i++) {
+        const ember = document.createElement('div');
+        ember.className = 'ember';
+        ember.style.left = Math.random() * 100 + '%';
+        ember.style.animationDuration = (15 + Math.random() * 25) + 's';
+        ember.style.animationDelay = (Math.random() * 20) + 's';
+        ember.style.opacity = String(0.3 + Math.random() * 0.4);
+        ember.style.width = ember.style.height = (1 + Math.random() * 2) + 'px';
+        container.appendChild(ember);
+      }
+    })();
+
+    // ----- Reveal on scroll (IntersectionObserver) -----
+    (function initReveal() {
+      const reveals = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        reveals.forEach(el => el.classList.add('visible'));
+        return;
+      }
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+      reveals.forEach(el => obs.observe(el));
+    })();
+  </script>
+
+</body>
+</html>
